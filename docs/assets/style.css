@@ -94,4 +94,16 @@ footer {
   font-size: 0.85rem;
 }
 
-.mermaid { background: var(--card); border-radius: 8px; padding: 1rem; }
+.muted { color: var(--muted); font-size: 0.9rem; margin-top: -0.5rem; }
+.muted a { color: var(--accent); }
+
+.arch-section { margin-bottom: 2rem; }
+.mermaid-wrap {
+  background: #f7fafc;
+  border: 1px solid #8fa9bc;
+  border-radius: 8px;
+  padding: 1.25rem;
+  overflow-x: auto;
+}
+.mermaid-wrap .mermaid { background: transparent; }
+.mermaid svg { max-width: 100%; height: auto; }

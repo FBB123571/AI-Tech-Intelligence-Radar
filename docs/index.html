@@ -15,41 +15,57 @@
       <h1>AI 技术情报雷达</h1>
       <p class="lead">为 5–8 人 Lab 提供周度技术情报采集、Agent 评估与决策辅助。含完整方案、项目规划、可运行 Demo 与示例周报。</p>
       <nav class="cta">
-        <a class="btn primary" href="report.md">方案报告</a>
+        <a class="btn primary" href="report.md">方案报告（提交用）</a>
         <a class="btn" href="project-plan.md">项目规划书</a>
         <a class="btn" href="llm-usage.md">LLM 说明</a>
-        <a class="btn" href="https://github.com/FBB123571/AI-Tech-Intelligence-Radar" target="_blank" rel="noopener">GitHub</a>
+        <a class="btn" href="https://github.com/FBB123571/AI-Tech-Intelligence-Radar" target="_blank" rel="noopener">GitHub 仓库</a>
+        <a class="btn" href="https://fbb123571.github.io/AI-Tech-Intelligence-Radar/" target="_blank" rel="noopener">在线主页</a>
       </nav>
     </div>
   </header>
 
   <main class="wrap">
-    <section>
-      <h2>系统架构</h2>
+    <section class="arch-section">
+      <h2>系统架构（科研配色 · Mermaid）</h2>
+      <p class="muted">与 <a href="report.md">report.md</a> 内嵌架构图一致 · 源文件 <a href="https://github.com/FBB123571/AI-Tech-Intelligence-Radar/blob/main/diagrams/architecture.mmd">architecture.mmd</a></p>
+      <div class="mermaid-wrap">
       <pre class="mermaid">
-flowchart TB
-    subgraph sources["信息源"]
-        ARX["arXiv"]
-        HF["Hugging Face"]
-        GH["GitHub"]
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#E8F1F8","primaryBorderColor":"#1F4E79","secondaryColor":"#E6F4F1","secondaryBorderColor":"#2A7B6E","tertiaryColor":"#F5F0E6","tertiaryBorderColor":"#6B5B3E","lineColor":"#4A6274","clusterBkg":"#F7FAFC","clusterBorder":"#8FA9BC","fontFamily":"Segoe UI, sans-serif"}}}%%
+flowchart LR
+    subgraph L1["① 信息源层"]
+        direction TB
+        S1["arXiv"] --- S2["Hugging Face"] --- S3["GitHub"]
     end
-    subgraph ingest["采集层"]
-        ADAPT["源适配器"]
-        DB[("SQLite")]
+    subgraph L2["② 采集层"]
+        direction TB
+        ADP["源适配器"] --> RAW[("raw_items")]
     end
-    subgraph agents["Agent 层"]
-        CLS["Classifier"]
-        SCR["Scorer"]
-        WRT["Writer"]
-        CLS --> SCR --> WRT
+    subgraph L3["③ 数据层"]
+        direction TB
+        DED["去重"] --> DB[("SQLite")] --> VEC[("向量")]
     end
-    subgraph deliver["交付"]
-        MD["周报 Markdown"]
-        WEB["本站点"]
+    subgraph L4["④ Agent 层"]
+        direction TB
+        CLS["Classifier"] --> SCR["Scorer"] --> WRT["Writer"]
     end
-    sources --> ADAPT --> DB --> CLS
-    WRT --> MD --> WEB
+    subgraph L5["⑤ 人机协同"]
+        ED["编辑复核"]
+    end
+    subgraph L6["⑥ 交付层"]
+        direction TB
+        RPT["周报"] --> WEB["Pages 站点"]
+    end
+    L1 --> L2 --> L3 --> L4 --> L5 --> L6
+    classDef layerSource fill:#E8F1F8,stroke:#1F4E79,color:#1A2B3C
+    classDef layerData fill:#E6F4F1,stroke:#2A7B6E,color:#1A2B3C
+    classDef layerAgent fill:#F5F0E6,stroke:#6B5B3E,color:#1A2B3C
+    classDef layerHuman fill:#F3E8EE,stroke:#7B4B6A,color:#1A2B3C
+    class S1,S2,S3 layerSource
+    class DED,DB,VEC layerData
+    class CLS,SCR,WRT layerAgent
+    class ED layerHuman
       </pre>
+      </div>
     </section>
 
     <section class="grid">
@@ -86,7 +102,7 @@ flowchart TB
   </footer>
 
   <script>
-    mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+    mermaid.initialize({ startOnLoad: true, theme: 'base', securityLevel: 'loose' });
     fetch('reports/sample_weekly_report.md')
       .then(r => r.ok ? r.text() : Promise.reject())
       .then(md => { document.getElementById('report-preview').innerHTML = marked.parse(md); })

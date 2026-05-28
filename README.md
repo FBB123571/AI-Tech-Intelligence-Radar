@@ -10,8 +10,9 @@
 
 | 资源 | 链接 |
 |------|------|
-| **文档站（GitHub Pages）** | 推送 `main` 后于仓库 Settings → Pages 查看，或见 [docs/index.html](docs/index.html) 本地预览 |
-| **方案报告** | [docs/report.md](docs/report.md) |
+| **GitHub 仓库** | https://github.com/FBB123571/AI-Tech-Intelligence-Radar |
+| **在线文档站（GitHub Pages）** | https://fbb123571.github.io/AI-Tech-Intelligence-Radar/ |
+| **方案报告（提交用）** | [docs/report.md](docs/report.md) |
 | **项目规划书** | [docs/project-plan.md](docs/project-plan.md) |
 | **LLM 使用说明** | [docs/llm-usage.md](docs/llm-usage.md) |
 | **示例周报** | [reports/sample_weekly_report.md](reports/sample_weekly_report.md) |

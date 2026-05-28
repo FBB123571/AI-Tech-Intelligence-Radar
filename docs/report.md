@@ -1,10 +1,26 @@
 # AI 技术情报雷达 — 方案设计报告
 
 **题目**：AI 技术情报雷达 · 方案设计（AI 应用 Lab 管培生测试）  
-**版本**：v2.0（精加工交付）  
+**版本**：v2.1（精加工 + 科研风架构图）  
 **日期**：2026-05-28  
+**提交者仓库**：[FBB123571/AI-Tech-Intelligence-Radar](https://github.com/FBB123571/AI-Tech-Intelligence-Radar)
 
-**配套交付**：[项目规划书](./project-plan.md) · [LLM 使用说明](./llm-usage.md) · [Demo 源码](../src/radar/) · [示例周报](../reports/sample_weekly_report.md) · [在线文档站](./index.html)
+---
+
+## 交付物与在线链接
+
+| 类型 | 说明 | 链接 |
+|------|------|------|
+| **GitHub 代码仓库** | 方案、Demo、网站源码 | https://github.com/FBB123571/AI-Tech-Intelligence-Radar |
+| **在线文档站（GitHub Pages）** | 报告导航、架构图、周报预览 | https://fbb123571.github.io/AI-Tech-Intelligence-Radar/ |
+| **本报告（主交付 Markdown）** | 四章方案设计（本文） | [docs/report.md](https://github.com/FBB123571/AI-Tech-Intelligence-Radar/blob/main/docs/report.md) |
+| **项目规划书** | WBS、甘特、预算、风险 | [docs/project-plan.md](https://github.com/FBB123571/AI-Tech-Intelligence-Radar/blob/main/docs/project-plan.md) |
+| **LLM 使用说明** | AI 协作透明度（评测项） | [docs/llm-usage.md](https://github.com/FBB123571/AI-Tech-Intelligence-Radar/blob/main/docs/llm-usage.md) |
+| **架构图源文件** | Mermaid，可导出 PNG | [diagrams/architecture.mmd](https://github.com/FBB123571/AI-Tech-Intelligence-Radar/blob/main/diagrams/architecture.mmd) |
+| **可运行 Demo** | 离线：`python src/radar/cli.py demo` | [src/radar/](https://github.com/FBB123571/AI-Tech-Intelligence-Radar/tree/main/src/radar) |
+| **示例周报** | Demo 生成产物 | [reports/sample_weekly_report.md](https://github.com/FBB123571/AI-Tech-Intelligence-Radar/blob/main/reports/sample_weekly_report.md) |
+
+**本地路径**：`/mnt/sdb1/leijh/AI-Tech-Intelligence-Radar`（Windows：`D:\mnt\sdb1\leijh\AI-Tech-Intelligence-Radar`）
 
 ---
 
@@ -72,7 +88,89 @@
 
 ### 2.2 总体架构
 
-架构图见 **[diagrams/architecture.mmd](../diagrams/architecture.mmd)**（Mermaid 源文件，可导出 PNG 作为正式附图）。
+下图采用 **Mermaid** 绘制，配色为科研论文常用 **蓝灰 / 青绿分层**（可在 GitHub、VS Code、Typora 中直接渲染）。源文件：[diagrams/architecture.mmd](../diagrams/architecture.mmd)。
+
+```mermaid
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "fontFamily": "Segoe UI, Helvetica Neue, Arial, sans-serif",
+    "fontSize": "14px",
+    "primaryColor": "#E8F1F8",
+    "primaryTextColor": "#1A2B3C",
+    "primaryBorderColor": "#1F4E79",
+    "secondaryColor": "#E6F4F1",
+    "secondaryBorderColor": "#2A7B6E",
+    "tertiaryColor": "#F5F0E6",
+    "tertiaryBorderColor": "#6B5B3E",
+    "lineColor": "#4A6274",
+    "clusterBkg": "#F7FAFC",
+    "clusterBorder": "#8FA9BC",
+    "titleColor": "#1F4E79"
+  },
+  "flowchart": { "curve": "basis", "padding": 16, "nodeSpacing": 28, "rankSpacing": 40 }
+}}%%
+flowchart LR
+    subgraph L1["① 信息源层 · P0/P1/P2"]
+        direction TB
+        S1["arXiv"]
+        S2["Hugging Face"]
+        S3["GitHub"]
+        S4["博客 RSS"]
+        S5["Newsletter"]
+    end
+    subgraph L2["② 采集层"]
+        direction TB
+        SCH["APScheduler"]
+        ADP["源适配器"]
+        RAW[("raw_items")]
+    end
+    subgraph L3["③ 数据层"]
+        direction TB
+        DED["去重"]
+        DB[("SQLite")]
+        VEC[("向量索引")]
+        CFG["focus.yaml"]
+    end
+    subgraph L4["④ Agent 层 · LangGraph"]
+        direction TB
+        ORC["Orchestrator"]
+        CLS["Classifier"]
+        SCR["Scorer"]
+        WRT["Writer"]
+        ORC --> CLS --> SCR --> WRT
+    end
+    subgraph L5["⑤ 人机协同"]
+        direction TB
+        ED["编辑复核 ≤30min/周"]
+    end
+    subgraph L6["⑥ 交付层"]
+        direction TB
+        RPT["周报 MD"]
+        PUSH["飞书/邮件"]
+        WEB["看板 / Pages"]
+    end
+    S1 & S2 & S3 & S4 & S5 --> ADP
+    SCH --> ADP --> RAW --> DED --> DB
+    DB <--> VEC
+    CFG -.-> SCR
+    DB --> ORC
+    WRT --> RPT --> ED --> PUSH
+    ED --> WEB
+
+    classDef layerSource fill:#E8F1F8,stroke:#1F4E79,stroke-width:1.5px,color:#1A2B3C
+    classDef layerData fill:#E6F4F1,stroke:#2A7B6E,stroke-width:1.5px,color:#1A2B3C
+    classDef layerAgent fill:#F5F0E6,stroke:#6B5B3E,stroke-width:1.5px,color:#1A2B3C
+    classDef layerHuman fill:#F3E8EE,stroke:#7B4B6A,stroke-width:1.5px,color:#1A2B3C
+    classDef store fill:#FFFFFF,stroke:#2A7B6E,stroke-width:2px,color:#1A2B3C
+    class S1,S2,S3,S4,S5 layerSource
+    class DED,CFG layerData
+    class RAW,DB,VEC store
+    class ORC,CLS,SCR,WRT layerAgent
+    class ED layerHuman
+```
+
+> **图例**：① 信息源 → ② 采集 → ③ 数据存储与去重 → ④ 三 Agent 流水线 → ⑤ 人工复核 → ⑥ 周报 / 通知 / 网站。运维（日志、成本、告警）横切采集与 Agent 层，见源文件 L7 子图。
 
 逻辑分层如下：
 
