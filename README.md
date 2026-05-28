@@ -12,7 +12,9 @@
 |------|------|
 | **GitHub 仓库** | https://github.com/FBB123571/AI-Tech-Intelligence-Radar |
 | **在线文档站（GitHub Pages）** | https://fbb123571.github.io/AI-Tech-Intelligence-Radar/ |
-| **方案报告（提交用）** | [docs/report.md](docs/report.md) |
+| **方案报告（提交用 · v3 对照补全）** | [docs/report.md](docs/report.md) |
+| **实现架构图** | [diagrams/architecture-impl.mmd](diagrams/architecture-impl.mmd) |
+| **FastAPI / Streamlit PoC** | [src/examples/](src/examples/) |
 | **项目规划书** | [docs/project-plan.md](docs/project-plan.md) |
 | **LLM 使用说明** | [docs/llm-usage.md](docs/llm-usage.md) |
 | **示例周报** | [reports/sample_weekly_report.md](reports/sample_weekly_report.md) |

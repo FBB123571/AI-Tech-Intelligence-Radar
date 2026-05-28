@@ -1,0 +1,45 @@
+%% 实现架构 — FastAPI + Streamlit 四层（科研配色）
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#E8F1F8","primaryBorderColor":"#1F4E79","secondaryColor":"#E6F4F1","secondaryBorderColor":"#2A7B6E","tertiaryColor":"#F5F0E6","tertiaryBorderColor":"#6B5B3E","lineColor":"#4A6274","fontFamily":"Segoe UI, sans-serif"}}}%%
+
+flowchart TB
+    subgraph UI["展现与协作层"]
+        ST["Streamlit Dashboard"]
+        ST1["每日情报流"]
+        ST2["人工打分/筛选"]
+        ST3["周报一键导出 MD"]
+    end
+
+    subgraph API["服务与控制层"]
+        FA["FastAPI Server"]
+        FA1["路由 / REST"]
+        FA2["Pipeline 控制"]
+        FA3["APScheduler 异步任务"]
+    end
+
+    subgraph AI["智能与存储层"]
+        LLM["LLM 节点<br/>DeepSeek-V3 / GPT-4o-mini"]
+        CHR[("ChromaDB<br/>语义去重")]
+        SQL[("SQLite<br/>元数据/状态")]
+    end
+
+    subgraph CRAWL["数据采集层"]
+        C1["GitHub Trending"]
+        C2["Hugging Face Daily"]
+        C3["ArXiv AI RSS"]
+    end
+
+    C1 & C2 & C3 -->|落库| SQL
+    C1 & C2 & C3 -->|向量化| CHR
+    SQL <-->|CRUD| FA
+    LLM <-->|过滤与摘要| FA
+    CHR <-->|语义检索| FA
+    FA <-->|HTTP| ST
+
+    classDef ui fill:#E8F1F8,stroke:#1F4E79,stroke-width:1.5px,color:#1A2B3C
+    classDef api fill:#E6F4F1,stroke:#2A7B6E,stroke-width:1.5px,color:#1A2B3C
+    classDef ai fill:#F5F0E6,stroke:#6B5B3E,stroke-width:1.5px,color:#1A2B3C
+    classDef crawl fill:#EEF2F6,stroke:#4A6274,stroke-width:1.5px,color:#1A2B3C
+    class ST,ST1,ST2,ST3 ui
+    class FA,FA1,FA2,FA3 api
+    class LLM,CHR,SQL ai
+    class C1,C2,C3 crawl

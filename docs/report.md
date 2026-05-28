@@ -1,9 +1,12 @@
 # AI 技术情报雷达 — 方案设计报告
 
-**题目**：AI 技术情报雷达 · 方案设计（AI 应用 Lab 管培生测试）  
-**版本**：v2.1（精加工 + 科研风架构图）  
-**日期**：2026-05-28  
-**提交者仓库**：[FBB123571/AI-Tech-Intelligence-Radar](https://github.com/FBB123571/AI-Tech-Intelligence-Radar)
+> **项目名称**：AI 技术情报雷达系统 MVP 方案设计  
+> **题目**：AI 应用 Lab 管培生 / 实习生测试题  
+> **参考依据**：《AI 应用 Lab 管培生测试题》任务场景与交付要求  
+> **项目排期**：1–2 人 / 4 周落地可用 MVP，后续逐步演进  
+> **版本**：v3.0（对照参考方案补全）  
+> **日期**：2026-05-28  
+> **GitHub**：[FBB123571/AI-Tech-Intelligence-Radar](https://github.com/FBB123571/AI-Tech-Intelligence-Radar)
 
 ---
 
@@ -11,14 +14,16 @@
 
 | 类型 | 说明 | 链接 |
 |------|------|------|
-| **GitHub 代码仓库** | 方案、Demo、网站源码 | https://github.com/FBB123571/AI-Tech-Intelligence-Radar |
+| **GitHub 代码仓库** | 方案、Demo、PoC 示例、网站源码 | https://github.com/FBB123571/AI-Tech-Intelligence-Radar |
 | **在线文档站（GitHub Pages）** | 报告导航、架构图、周报预览 | https://fbb123571.github.io/AI-Tech-Intelligence-Radar/ |
-| **本报告（主交付 Markdown）** | 四章方案设计（本文） | [docs/report.md](https://github.com/FBB123571/AI-Tech-Intelligence-Radar/blob/main/docs/report.md) |
+| **本报告（主交付 Markdown）** | 完整方案（本文） | [docs/report.md](https://github.com/FBB123571/AI-Tech-Intelligence-Radar/blob/main/docs/report.md) |
 | **项目规划书** | WBS、甘特、预算、风险 | [docs/project-plan.md](https://github.com/FBB123571/AI-Tech-Intelligence-Radar/blob/main/docs/project-plan.md) |
-| **LLM 使用说明** | AI 协作透明度（评测项） | [docs/llm-usage.md](https://github.com/FBB123571/AI-Tech-Intelligence-Radar/blob/main/docs/llm-usage.md) |
-| **架构图源文件** | Mermaid，可导出 PNG | [diagrams/architecture.mmd](https://github.com/FBB123571/AI-Tech-Intelligence-Radar/blob/main/diagrams/architecture.mmd) |
-| **可运行 Demo** | 离线：`python src/radar/cli.py demo` | [src/radar/](https://github.com/FBB123571/AI-Tech-Intelligence-Radar/tree/main/src/radar) |
-| **示例周报** | Demo 生成产物 | [reports/sample_weekly_report.md](https://github.com/FBB123571/AI-Tech-Intelligence-Radar/blob/main/reports/sample_weekly_report.md) |
+| **LLM 使用说明** | AI 协作透明度 | [docs/llm-usage.md](https://github.com/FBB123571/AI-Tech-Intelligence-Radar/blob/main/docs/llm-usage.md) |
+| **逻辑架构图** | Mermaid 源文件 | [diagrams/architecture.mmd](https://github.com/FBB123571/AI-Tech-Intelligence-Radar/blob/main/diagrams/architecture.mmd) |
+| **实现架构图** | FastAPI + Streamlit 四层 | [diagrams/architecture-impl.mmd](https://github.com/FBB123571/AI-Tech-Intelligence-Radar/blob/main/diagrams/architecture-impl.mmd) |
+| **CLI Demo** | `python src/radar/cli.py demo` | [src/radar/](https://github.com/FBB123571/AI-Tech-Intelligence-Radar/tree/main/src/radar) |
+| **FastAPI / Streamlit PoC** | 报告 §7 对应代码 | [src/examples/](https://github.com/FBB123571/AI-Tech-Intelligence-Radar/tree/main/src/examples) |
+| **示例周报** | Demo 生成 | [reports/sample_weekly_report.md](https://github.com/FBB123571/AI-Tech-Intelligence-Radar/blob/main/reports/sample_weekly_report.md) |
 
 **本地路径**：`/mnt/sdb1/leijh/AI-Tech-Intelligence-Radar`（Windows：`D:\mnt\sdb1\leijh\AI-Tech-Intelligence-Radar`）
 
@@ -26,298 +31,427 @@
 
 ## 执行摘要
 
-本方案为 **5–8 人 AI 应用 Lab** 设计「技术情报雷达」：**日采、周编、人工复核**，通过 **Classifier → Scorer → Writer** 三 Agent 流水线（LangGraph 编排），将 arXiv / Hugging Face / GitHub 等公开源的结构化情报转化为带 **证据链的三档推荐**（关注 / 观望 / 暂不投入），服务 **周度是否投入** 决策。MVP **4 周、1–2 人** 可落地；仓库含 **可运行 Demo**（`python src/radar/cli.py demo`）与 **GitHub Pages** 文档站，验证架构可行性。
+为 **5–8 人 AI 应用 Lab** 设计「技术情报雷达」：**日采、周编、人机协同复核**。MVP 严格限定 **GitHub Trending + Hugging Face Daily + ArXiv AI** 三大高信噪比源；通过 **URL/向量去重 + 两阶段 LLM 提炼 + Streamlit 人工筛选**，输出带证据链的周报初稿，辅助周度「是否投入」决策。
+
+**架构双视图**：① 逻辑流水线（Classifier → Scorer → Writer，可用 LangGraph 编排，满足题目 Agent 要求）；② 工程实现（**FastAPI 服务层 + Streamlit 展现层** 前后端解耦）。**不做**全自动物理 Benchmark 与容器化部署评测。仓库已含 CLI Demo、PoC 代码与 GitHub Pages 文档站。
 
 ---
 
 ## 1. 对题目的质疑与假设
 
-### 1.1 题目中的模糊点
+### 1.1 题目中的模糊点（总表）
 
 | 模糊点 | 说明 | 本方案的处理方式 |
 |--------|------|------------------|
-| 「工程价值」无统一定义 | 学术影响力 ≠ Lab 可落地价值；同一篇论文对不同组意义不同 | 采用 **可配置评分 Rubric**（复现难度、与 Lab 方向契合度、许可证、算力门槛、维护活跃度），由 Lab 负责人每季度校准权重 |
-| 「持续扫描」的频率与深度 | 全量爬全网不可行；漏报 vs 噪声的权衡未说明 | MVP 定为 **日采 + 周编**：每日增量入库，每周五生成一份决策向周报，紧急热点（如重大开源发布）可走可选告警通道 |
-| 「辅助决策」的权责边界 | 系统若写成「建议投入」，易被误解为自动决策 | 输出统一为 **「关注 / 观望 / 暂不投入」三档 + 证据链**，最终拍板仍由人完成；系统不提供预算或排期承诺 |
-| Agent 是否必须 | 题目将 Agent 作为设计点，但未规定自主程度 | 采用 **「编排式多 Agent」**：各 Agent 职责单一、可替换；核心链路在 4 周内可不依赖复杂自主规划，以降低 MVP 风险 |
-| 用户是 5–8 人「全 Lab」还是「决策者 subset」 | 若全员订阅，信息过载 | 默认 **1 名编辑（轮值）+ 1–2 名决策者** 为必读；其余成员可读归档周报或按标签订阅 |
-| 与现有工具的关系 | 很多人已用 RSS、Twitter、PaperWeekly | 雷达定位为 **「去重 + 结构化 + Lab 语境打分」**，不重复造「又一个 RSS 阅读器」 |
+| 「工程价值」无统一定义 | 学术影响力 ≠ Lab 可落地价值 | **可配置 Rubric** + 社区代理指标初筛 + 人工物理验证 |
+| 「持续扫描」频率与深度 | 全量爬全网不可行 | **日采 + 周编**；MVP 仅三大结构化源 |
+| 「辅助决策」权责边界 | 易误解为自动决策 | **三档推荐 + 证据链**；人工复核后发布 |
+| Agent 是否必须 | 未规定自主程度 | **编排式 Agent 逻辑视图** + **固化 Pipeline 工程实现** |
+| 用户范围 | 5–8 人是否全员必读 | **1 编辑 + 1–2 决策者**必读，其余归档订阅 |
+| 与现有工具关系 | RSS / 群 / PaperWeekly | 定位 **去重 + 结构化 + Lab 语境打分** |
 
-### 1.2 核心假设
+### 1.2 质疑一：「工程价值 / 能力边界」的自动化可行性
 
-1. **A1 — 周度决策粒度**：Lab 当前主要矛盾是「本周要不要派人试 X」，而非毫秒级交易；周报节奏与假设一致。  
-2. **A2 — 英文源为主**：主流模型/论文/开源首发以英文社区为主；中文源作为补充频道，不做 MVP 必选项。  
-3. **A3 — 可接受 LLM API 成本**：按每周约 200–400 条去重后条目估算，MVP 月 LLM 成本可控制在 **¥200–800**（视模型与摘要深度而定）。  
-4. **A4 — 有 1 人兼职运维**：4 周开发 + 后续每周约 2–4 小时人工复核（编辑周报、修正误分类）。  
-5. **A5 — 不涉及训练自有基础模型**：雷达是情报与评估系统，不是 Lab 的训练平台。
+* **需求歧义**：题目要求评测新模型、论文、开源工具的「工程价值能力边界」。
+* **背后假设**：真实工程价值（吞吐量、显存、微调稳定性、加速比）依赖 **GPU、隔离环境、Benchmark 脚本真机运行**，非 1–2 人 4 周可自动化完成。
+* **MVP 边界**：**不做全自动部署与物理评测**。采用 **社区代理指标**（Star 增速、License、Issue 活跃度、HF 下载量、社区讨论热度）量化初筛；深度验证由 Lab **人工物理试用** 完成。
 
-### 1.3 范围边界
+### 1.3 质疑二：「辅助决策报告」的生成主体与信任边界
 
-**本期 MVP（4 周）做：**
+* **需求歧义**：要求输出「经验证的辅助决策报告」。
+* **背后假设**：LLM 一键终稿存在幻觉，且无法感知 Lab 当期算力预算、技术栈与战略重心。
+* **MVP 边界**：定位为 **「情报高能初筛 + 简报半自动生成」**。每周五输出 Markdown **初稿**；Lab 周会前 **≤1 小时人工走查** 后提交决策者。系统做 **信息平权与效率放大**，不替代最终决策。
 
-- 多源采集（RSS、GitHub Trending、Hugging Face Daily、arXiv cs.CL/cs.LG/cs.CV 等类目）  
-- 去重、标签、向量检索（查历史是否已报道）  
-- 三 Agent 流水线：分类 → 工程价值评估 → 周报段落生成  
-- 输出 Markdown 周报 + 可选飞书/邮件推送  
-- 简单 Web 或静态页浏览「本周条目 + 评分」  
+### 1.4 质疑三：「持续扫描 AI 社区」的数据源噪音
 
-**明确不做（避免 scope creep）：**
+* **需求歧义**：未限定渠道与范围。
+* **背后假设**：X/Twitter、Reddit、Discord 等 **噪音大、反爬严**，分散投入将导致 MVP 延期。
+* **MVP 边界**：首版 **仅三大结构化源**——**GitHub Trending**、**Hugging Face Daily Papers**、**ArXiv AI 分类（cs.AI 等）**，确保采集→存储→展现全链路 100% 跑通。P1/P2 源列入演进路线。
 
-- 自动 clone 代码、自动跑 benchmark、自动申请 GPU  
-- 覆盖全网社交媒体全量、付费数据库（如 The Information）  
-- 多 Lab 多租户的权限与计费系统  
-- 替代 PM 的立项书 / OKR 系统  
+### 1.5 核心假设
+
+1. **A1**：决策节奏为 **周度**「本周是否试用 X」。  
+2. **A2**：英文源为主，中文源为 P2 补充。  
+3. **A3**：LLM API 月成本约 **¥50–800**（视模型与条数）。  
+4. **A4**：每周 **≤30 min–1 h** 编辑复核可接受。  
+5. **A5**：不涉及训练自有基础模型。
+
+### 1.6 范围边界
+
+**MVP 做**：三大源采集；URL + 语义去重；两阶段 LLM；SQLite + ChromaDB；FastAPI + Streamlit；周报 Markdown；GitHub Pages 文档站；CLI Demo。
+
+**MVP 不做**：自动 Docker Benchmark；全网社交爬虫；多租户计费；替代 PM/OKR；LLM 无人值守终稿发布。
 
 ---
 
 ## 2. 方案设计
 
-### 2.1 系统目标
-
-为 AI 应用 Lab（5–8 人）提供 **「周度技术情报 → 结构化评估 → 可追溯决策参考」** 的闭环：
+### 2.1 系统目标与成功标准
 
 ```
-信息源 → 采集归一化 → 知识库 → Agent 评估 → 人工复核 → 周报/看板 → 决策者
+信息源 → 采集归一化 → 知识库 → LLM/Agent 评估 → 人工复核 → 周报/看板 → 决策者
 ```
 
-**成功标准（MVP 结束时）：**
+| 指标 | 目标 |
+|------|------|
+| 周报连续性 | 连续 2 周自动产出 |
+| 编辑成本 | 复核 **< 30 min–1 h / 周** |
+| 决策影响 | ≥2 条情报影响「是否试用」判断 |
+| 重复报道率 | **< 10%** |
 
-- 连续 2 周自动产出周报，编辑修改时间 **< 30 分钟/周**  
-- 决策者反馈：「至少 2 条情报影响了本周是否试用某开源/模型的判断」  
-- 重复报道率（同一事件多次入库）**< 10%**  
+### 2.2 逻辑架构图（业务流水线 · 科研配色）
 
-### 2.2 总体架构
-
-下图采用 **Mermaid** 绘制，配色为科研论文常用 **蓝灰 / 青绿分层**（可在 GitHub、VS Code、Typora 中直接渲染）。源文件：[diagrams/architecture.mmd](../diagrams/architecture.mmd)。
+> 满足题目 **Agent 架构** 要求；生产环境用 LangGraph 编排，Demo 已实现规则版节点。源文件：[architecture.mmd](../diagrams/architecture.mmd)
 
 ```mermaid
-%%{init: {
-  "theme": "base",
-  "themeVariables": {
-    "fontFamily": "Segoe UI, Helvetica Neue, Arial, sans-serif",
-    "fontSize": "14px",
-    "primaryColor": "#E8F1F8",
-    "primaryTextColor": "#1A2B3C",
-    "primaryBorderColor": "#1F4E79",
-    "secondaryColor": "#E6F4F1",
-    "secondaryBorderColor": "#2A7B6E",
-    "tertiaryColor": "#F5F0E6",
-    "tertiaryBorderColor": "#6B5B3E",
-    "lineColor": "#4A6274",
-    "clusterBkg": "#F7FAFC",
-    "clusterBorder": "#8FA9BC",
-    "titleColor": "#1F4E79"
-  },
-  "flowchart": { "curve": "basis", "padding": 16, "nodeSpacing": 28, "rankSpacing": 40 }
-}}%%
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#E8F1F8","primaryBorderColor":"#1F4E79","secondaryColor":"#E6F4F1","secondaryBorderColor":"#2A7B6E","tertiaryColor":"#F5F0E6","tertiaryBorderColor":"#6B5B3E","lineColor":"#4A6274","clusterBkg":"#F7FAFC","clusterBorder":"#8FA9BC","fontFamily":"Segoe UI, sans-serif"}}}%%
 flowchart LR
-    subgraph L1["① 信息源层 · P0/P1/P2"]
-        direction TB
-        S1["arXiv"]
+    subgraph L1["① 信息源 · MVP 三大源"]
+        S1["GitHub Trending"]
         S2["Hugging Face"]
-        S3["GitHub"]
-        S4["博客 RSS"]
-        S5["Newsletter"]
+        S3["ArXiv AI"]
     end
     subgraph L2["② 采集层"]
-        direction TB
-        SCH["APScheduler"]
+        SCH["APScheduler 06:00"]
         ADP["源适配器"]
         RAW[("raw_items")]
     end
     subgraph L3["③ 数据层"]
-        direction TB
-        DED["去重"]
+        DED["URL MD5 + 向量去重"]
         DB[("SQLite")]
-        VEC[("向量索引")]
+        VEC[("ChromaDB")]
         CFG["focus.yaml"]
     end
-    subgraph L4["④ Agent 层 · LangGraph"]
-        direction TB
-        ORC["Orchestrator"]
+    subgraph L4["④ 智能层"]
+        F1["阶段1: 相关性过滤"]
+        F2["阶段2: 结构化 JSON"]
         CLS["Classifier"]
         SCR["Scorer"]
         WRT["Writer"]
-        ORC --> CLS --> SCR --> WRT
     end
     subgraph L5["⑤ 人机协同"]
-        direction TB
-        ED["编辑复核 ≤30min/周"]
+        ED["Streamlit 筛选<br/>准许入选/忽略"]
     end
     subgraph L6["⑥ 交付层"]
-        direction TB
-        RPT["周报 MD"]
-        PUSH["飞书/邮件"]
-        WEB["看板 / Pages"]
+        RPT["weekly_report.md"]
+        WEB["Pages / 飞书"]
     end
-    S1 & S2 & S3 & S4 & S5 --> ADP
+    S1 & S2 & S3 --> ADP
     SCH --> ADP --> RAW --> DED --> DB
     DB <--> VEC
     CFG -.-> SCR
-    DB --> ORC
-    WRT --> RPT --> ED --> PUSH
-    ED --> WEB
+    DB --> F1 --> F2
+    F2 --> CLS --> SCR --> WRT --> RPT --> ED --> WEB
 
-    classDef layerSource fill:#E8F1F8,stroke:#1F4E79,stroke-width:1.5px,color:#1A2B3C
-    classDef layerData fill:#E6F4F1,stroke:#2A7B6E,stroke-width:1.5px,color:#1A2B3C
-    classDef layerAgent fill:#F5F0E6,stroke:#6B5B3E,stroke-width:1.5px,color:#1A2B3C
-    classDef layerHuman fill:#F3E8EE,stroke:#7B4B6A,stroke-width:1.5px,color:#1A2B3C
-    classDef store fill:#FFFFFF,stroke:#2A7B6E,stroke-width:2px,color:#1A2B3C
-    class S1,S2,S3,S4,S5 layerSource
+    classDef layerSource fill:#E8F1F8,stroke:#1F4E79,color:#1A2B3C
+    classDef layerData fill:#E6F4F1,stroke:#2A7B6E,color:#1A2B3C
+    classDef layerAgent fill:#F5F0E6,stroke:#6B5B3E,color:#1A2B3C
+    classDef layerHuman fill:#F3E8EE,stroke:#7B4B6A,color:#1A2B3C
+    class S1,S2,S3 layerSource
     class DED,CFG layerData
-    class RAW,DB,VEC store
-    class ORC,CLS,SCR,WRT layerAgent
+    class RAW,DB,VEC layerData
+    class F1,F2,CLS,SCR,WRT layerAgent
     class ED layerHuman
 ```
 
-> **图例**：① 信息源 → ② 采集 → ③ 数据存储与去重 → ④ 三 Agent 流水线 → ⑤ 人工复核 → ⑥ 周报 / 通知 / 网站。运维（日志、成本、告警）横切采集与 Agent 层，见源文件 L7 子图。
+### 2.3 实现架构图（FastAPI + Streamlit 四层解耦）
 
-逻辑分层如下：
+> 1–2 人 4 周交付的 **工程落地视图**。源文件：[architecture-impl.mmd](../diagrams/architecture-impl.mmd)
+
+```mermaid
+%%{init: {"theme":"base","themeVariables":{"primaryColor":"#E8F1F8","primaryBorderColor":"#1F4E79","secondaryColor":"#E6F4F1","secondaryBorderColor":"#2A7B6E","tertiaryColor":"#F5F0E6","tertiaryBorderColor":"#6B5B3E","lineColor":"#4A6274","fontFamily":"Segoe UI, sans-serif"}}}%%
+flowchart TB
+    subgraph UI["展现与协作层"]
+        ST["Streamlit Dashboard"]
+        ST1["每日情报流看板"]
+        ST2["人工打分/筛选"]
+        ST3["周报一键导出 Markdown"]
+    end
+    subgraph API["服务与控制层"]
+        FA["FastAPI Server"]
+        FA1["REST 路由"]
+        FA2["Pipeline 控制"]
+        FA3["APScheduler 异步任务"]
+    end
+    subgraph AI["智能与存储层"]
+        LLM["LLM<br/>DeepSeek-V3 / GPT-4o-mini"]
+        CHR[("ChromaDB")]
+        SQL[("SQLite")]
+    end
+    subgraph CRAWL["数据采集层"]
+        C1["GitHub Trending"]
+        C2["Hugging Face Daily"]
+        C3["ArXiv AI RSS"]
+    end
+    C1 & C2 & C3 --> SQL
+    C1 & C2 & C3 --> CHR
+    SQL <--> FA
+    LLM <--> FA
+    CHR <--> FA
+    FA <--> ST
+
+    classDef ui fill:#E8F1F8,stroke:#1F4E79,color:#1A2B3C
+    classDef api fill:#E6F4F1,stroke:#2A7B6E,color:#1A2B3C
+    classDef ai fill:#F5F0E6,stroke:#6B5B3E,color:#1A2B3C
+    classDef crawl fill:#EEF2F6,stroke:#4A6274,color:#1A2B3C
+```
 
 | 层 | 职责 | MVP 技术选型 |
 |----|------|----------------|
-| **采集层** | 定时拉取、解析、原始存档 | Python 3.11、`APScheduler`、`feedparser`、`httpx`、GitHub/HF 官方或社区 API |
-| **数据层** | 条目存储、去重、向量检索 | `SQLite`（MVP）+ `sqlite-vec` 或 `Chroma` 本地向量库；条目表 + 原始 JSON 存档 |
-| **Agent 层** | 分类、打分、摘要、周报合成 | **LangGraph** 编排 3 个节点；LLM 使用 OpenAI 兼容 API（如 GPT-4o-mini / DeepSeek / 通义） |
-| **交付层** | 周报、通知、检索 UI | Jinja2 渲染 Markdown；`SMTP` 或飞书 Webhook；可选 `Streamlit` 只读看板 |
-| **运维层** | 调度、日志、成本、失败重试 | 单进程调度 + 日志文件；条目级重试；每周成本统计表 |
+| 数据采集层 | 定时拉取三大源 | `APScheduler`、`httpx`、`feedparser` |
+| 智能与存储层 | 落库、向量去重、LLM | `SQLite`、`ChromaDB`、`bge-small` 类 Embedding |
+| 服务与控制层 | API、任务调度 | **FastAPI** + Asyncio |
+| 展现与协作层 | 看板、人工筛选、导出 | **Streamlit** |
 
-### 2.3 Agent 架构设计
+### 2.4 关键模块说明
 
-采用 **「编排式多 Agent」**，而非单一「万能 Agent」或完全自主的 ReAct 循环——在 4 周 MVP 约束下，可测试性、成本、可解释性更好。
+#### 2.4.1 数据采集模块（Data Ingestion）
 
-```
-                    ┌─────────────────┐
-                    │  Orchestrator   │
-                    │  (LangGraph)    │
-                    └────────┬────────┘
-         ┌───────────────────┼───────────────────┐
-         ▼                   ▼                   ▼
-┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
-│ Classifier Agent│ │  Scorer Agent   │ │  Writer Agent   │
-│ 类型/标签/实体  │ │ Rubric 多维打分 │ │ 周报段落+证据链 │
-└─────────────────┘ └─────────────────┘ └─────────────────┘
-```
+* **调度**：`APScheduler` 集成于 FastAPI，每日 **06:00** 并行触发三源扫描。
+* **GitHub Trending**：Top 20 AI/Python 项目；提取名称、README 摘要、24h Star 增速、License。
+* **Hugging Face Daily**：官方 API 抓取热门模型、权重及关联论文。
+* **ArXiv AI RSS**：`cs.AI` / `cs.CL` / `cs.LG` 等类目 Title + Abstract。
+* **物理去重**：URL **MD5** 与 SQLite 历史主键比对，防重复下载。
 
-**各 Agent 说明：**
+#### 2.4.2 存储与向量层（Storage & Vector）
 
-| Agent | 输入 | 输出 | 设计要点 |
-|-------|------|------|----------|
-| **Classifier** | 标题、摘要、URL、来源 | `type`（model/paper/repo/tool/blog）、`tags`、`entities`（公司/机构/模型名） | 固定 JSON Schema 输出；温度 0；失败则落库为 `unclassified` 人工处理 |
-| **Scorer** | 分类结果 + Lab `focus.yaml`（方向关键词） | 五维分数 1–5 + `recommendation`（关注/观望/暂不）+ `rationale`（3–5 句） | Rubric 写入 Prompt，**禁止编造未给出的数字**（如 GitHub star 须来自采集字段） |
-| **Writer** | 本周 Top-N 高分条目 | 周报各章节 Markdown | 仅组稿，不新增事实；附「证据链接」列表 |
+**SQLite 表结构（核心字段）**：
 
-**为何用 Agent 而非单 Prompt：**  
-分类、打分、写作对 **准确性 / 创造性** 要求不同；拆分后可单独换模型（如 Scorer 用强推理模型，Writer 用便宜模型），并便于 A/B 评测与回归测试。
+| 字段 | 说明 |
+|------|------|
+| `id` | 自增主键 |
+| `title` / `url` | 标题与链接 |
+| `source_platform` | github / huggingface / arxiv |
+| `stars` | 热度代理指标 |
+| `summary` | LLM 摘要 |
+| `innovation` | 创新点（≤100 字） |
+| `eng_value` | 工程价值（≤100 字） |
+| `status` | 未处理 / 已入选 / 已忽略 |
+| `created_at` | 捕获时间 |
 
-**人工复核点（Human-in-the-loop）：**  
-Writer 输出后，**轮值编辑**在 Web/MD 中修改误分类、删除低质源、调整 Top-N，再发布——满足「辅助决策」而非「无人值守」。
+**ChromaDB**：Embedding 后做语义去重；与 **7 日内** 情报相似度 **> 0.85**（可配置 0.92）则合并或抑制低热度重复，实现跨平台去噪。
 
-### 2.4 监控信息源（分优先级）
+#### 2.4.3 智能过滤与摘要（LLM Engine · Two-Stage）
 
-| 优先级 | 来源 | 获取方式 | 说明 |
-|--------|------|----------|------|
-| **P0** | **arXiv**（cs.CL, cs.LG, cs.CV, cs.AI） | 官方 API / RSS | 论文主渠道；按关键词二次过滤 |
-| **P0** | **Hugging Face** Daily Papers & Trending Models | RSS / API | 模型与权重发布前沿 |
-| **P0** | **GitHub Trending**（Python / 标注 `machine-learning`） | 第三方 API 或定时抓取 | 开源工具与框架动向 |
-| **P1** | **官方博客 RSS**（OpenAI, Anthropic, Google DeepMind, Meta AI, Mistral 等） | RSS | 路线级信号，量少质高 |
-| **P1** | **精选 Newsletter**（如 The Batch、Import AI 等，择 1–2 份） | RSS/邮件转发入库 | 省编辑筛源时间 |
-| **P1** | **PyPI / npm 重大包**（可选） | 关键词 watch | 仅跟踪与 Lab 相关的包名列表 |
-| **P2** | **Twitter/X 列表**（学者/负责人列表） | 官方 API 若可用，否则 MVP 暂缓 | 成本高、噪声大；第二个月再加 |
-| **P2** | **Reddit r/MachineLearning** | RSS | 社区热度参考，不作为唯一依据 |
-| **P2** | **国内：机器之心、量子位等**（择 1） | RSS | 补中文语境，注意转载去重 |
+| 阶段 | 输入 | 输出 |
+|------|------|------|
+| **阶段 1 相关性硬过滤** | 标签 + 简介 | 是否属于 Lab 方向；过滤广告/无关项（约 60% 噪音） |
+| **阶段 2 结构化提炼** | 高价值条目 | JSON：`innovation`、`eng_value`、`gpu_cost_est`、`tech_score_1_5` |
 
-**去重策略：**  
-URL 规范化 → 相同 arXiv ID / GitHub repo 合并；标题 + 摘要 **向量相似度 > 0.92** 则合并为一条并保留多源链接。
+**模型**：DeepSeek-V3 / GPT-4o-mini，FastAPI **Asyncio** 并发，控制 Token 成本。
 
-### 2.5 工程价值评估 Rubric（Scorer 依据）
+**与 Agent 对齐**：阶段 1≈Classifier，阶段 2≈Scorer；Writer 负责聚合「已入选」条目生成周报。
 
-| 维度 | 1 分 | 5 分 | 权重（默认） |
-|------|------|------|----------------|
-| **Lab 方向契合** | 与当前项目无关 | 直接服务于在研课题 | 30% |
-| **可复现/可试用** | 仅论文无代码 | 有开源权重/文档齐全、本周可试 | 25% |
-| **影响力信号** | 无社区反馈 | 多源报道 / star 增速明显 / 大厂背书 | 20% |
-| **落地成本** | 需大量私有数据或超大算力 | 单卡可跑 demo | 15% |
-| **风险** | 许可证不明、安全风险 | 许可证清晰、维护活跃 | 10% |
+#### 2.4.4 展现与协作层（Streamlit Dashboard）
 
-加权后映射：`≥4.0` → 关注；`3.0–3.9` → 观望；`<3.0` → 暂不投入（仍可在周报附录列出一句说明）。
+* Lab 5–8 人刷 **每日情报流**，查看 LLM 提炼摘要。
+* 交互：**「准许入选周报」** / **「忽略此项」**。
+* 每周五：聚合 `status=已入选` 条目，**一键导出 Markdown** 决策简报。
 
-### 2.6 关键数据流（周循环）
+### 2.5 Agent 架构设计（题目对齐）
 
-1. **每日 02:00**：采集任务拉取昨日增量 → 写入 `raw_items` → 去重 → `items`  
-2. **每日 03:00**：对未处理条目跑 Classifier + Scorer（批量，限流）  
-3. **每周五 10:00**：Writer 拉取本周 `score ≥ 3.5` 的 Top-15 → 生成 `weekly_report.md`  
-4. **每周五 10:30**：编辑复核 → 飞书/邮件发送 → 归档至 `reports/YYYY-WW.md`  
+| Agent / 节点 | 输入 | 输出 |
+|--------------|------|------|
+| **Classifier** | 标题、摘要、URL | `type`、`tags`、`entities` |
+| **Scorer** | 分类 + `focus.yaml` | 五维分 + 关注/观望/暂不 + `rationale` |
+| **Writer** | Top-N 高分条目 | 周报 Markdown |
 
-### 2.7 四周 MVP 里程碑
+**编排**：LangGraph（生产）/ 规则引擎（当前 CLI Demo）。**人工复核**：编辑修改后发布，禁止无人值守终稿。
 
-| 周 | 目标 | 可演示产出 |
-|----|------|------------|
-| **W1** | 采集 + 存储 + 去重 | CLI 展示本周新条目列表；SQLite 库；至少 3 个 P0 源稳定运行 |
-| **W2** | Classifier + Scorer Agent | 每条目带类型、五维分数、推荐档；`focus.yaml` 可配置 |
-| **W3** | Writer + 周报模板 + 通知 | 第一份完整 Markdown 周报；飞书/邮件打通 |
-| **W4** | 简易看板 + 运维 + 文档 | Streamlit 浏览历史；失败告警；README 部署说明；连续跑通 1 个完整周循环 |
+### 2.6 工程价值 Rubric（Scorer）
 
-**人力分工建议（2 人）：**  
-- 开发 A：采集、数据层、调度  
-- 开发 B：Agent、Prompt、周报模板、前端看板  
-- 编辑（可轮值 Lab 成员）：W3 起介入 Prompt/Rubric 调参  
+| 维度 | 权重 | 说明 |
+|------|------|------|
+| Lab 方向契合 | 30% | 对照 `focus.yaml` |
+| 可复现/可试用 | 25% | 代码/权重是否可得 |
+| 影响力信号 | 20% | Star、多源报道 |
+| 落地成本 | 15% | 是否单卡可试 |
+| 风险 | 10% | License、维护度 |
 
-### 2.8 实习一个月延伸（超出 MVP 的路线图）
+映射：`≥4.0` 关注；`3.0–3.9` 观望；`<3.0` 暂不投入。
 
-- 增加 Twitter 列表与 Slack/Discord 公开频道监控  
-- 引入 **「试用任务单」**：从「关注」一键生成 Notion/飞书任务模板  
-- 对「已关注」条目做 **4 周回访**（是否已试用、结论如何），形成闭环数据  
-- 轻量 RAG：上传 Lab 内部项目简介，提升 Scorer 契合度判断  
+### 2.7 信息源优先级（演进）
+
+| 优先级 | 来源 | MVP |
+|--------|------|-----|
+| **P0** | GitHub / HF / ArXiv | ✅ 必做 |
+| **P1** | 官方博客 RSS、Newsletter | 第 2 月 |
+| **P2** | Twitter 列表、中文媒体 | 第 2–3 月 |
+
+### 2.8 周循环数据流
+
+1. **每日 06:00**：三源采集 → 去重 → 落库 → LLM 两阶段处理  
+2. **每日**：Classifier + Scorer（或合并入阶段 2）  
+3. **每周五 10:00**：Writer 生成 `weekly_report.md` 初稿  
+4. **每周五 10:30**：编辑复核 → 飞书/邮件 → 归档 `reports/YYYY-WW.md`
 
 ---
 
-## 3. 关键设计决策
+## 3. 关键设计决策与取舍
 
-### 3.1 决策记录
+### 3.1 决策一：固化 Pipeline + 定点 LLM，而非失控 Multi-Agent
 
-| 决策 | 备选 | **选择** | 理由 |
-|------|------|----------|------|
-| 架构风格 | 单体 Cron 脚本 vs Agent 编排 | **LangGraph 多 Agent** | 满足题目对 Agent 的要求；模块可测；实习期易扩展 |
-| 数据库 | Postgres vs SQLite | **SQLite + 本地向量库** | 1–2 人零运维；数据量周级 <10k 条足够 |
-| 实时性 | 实时推送 vs 周报 | **日采 + 周报** | 匹配「周度是否投入」决策节奏；开发量可控 |
-| LLM 部署 | 本地开源 vs API | **API 优先** | 4 周内避免 GPU 运维；Rubric 评测用 API 更快迭代 |
-| UI | 完整 React 后台 vs Streamlit | **Streamlit 只读看板** | 决策者只需浏览与搜索；编辑可直接改 Markdown |
-| 去重 | 仅 URL vs 向量 | **URL + 向量** | 同一新闻多源转载极常见 |
-| 自动化程度 | 全自动发布 vs 人工复核 | **强制人工复核** | 降低幻觉与误报对 Lab 信誉的损失 |
+* **思考**：AutoGen / CrewAI 等框架存在不可控、Token 爆炸、格式不稳定问题。  
+* **取舍**：爬虫/去重/落库用 **确定性代码**；仅摘要用 LLM。**逻辑上**仍拆为 Classifier / Scorer / Writer（满足 Agent 题意），**工程上**用 If-Else Pipeline 保证 4 周交付。  
+* **演进**：稳定后引入 LangGraph 编排与工具调用。
 
-### 3.2 主要权衡
+### 3.2 决策二：FastAPI + Streamlit 前后端解耦
 
-1. **广度 vs 深度**：MVP 只做 **8–10 个高质量源**，保证稳定与可解释，而非「能爬多少爬多少」。  
-2. **Agent 复杂度 vs 交付时间**：不做自主浏览网页的 Browser Agent（易脆、贵），采集用确定性爬虫 + API。  
-3. **评分客观性 vs Lab 特异性**：分数是 **相对 Lab 目标** 的，不是行业通用排名；需在 `focus.yaml` 明确 Lab 当前三个主攻方向。  
-4. **开源 vs 合规**：GitHub 私有库、未公开权重不做深度抓取；仅使用公开元数据。
+* **思考**：Streamlit 单文件塞爬虫+LLM 会导致刷新即重跑、5–8 人并发崩溃。  
+* **取舍**：**FastAPI** 负责计算、调度、落库、LLM；**Streamlit** 仅 REST 渲染。未来可换 React/Vue 而不动后端。
 
-### 3.3 风险与缓解
+### 3.3 决策三：SQLite + ChromaDB，放弃重度数据库
+
+* **思考**：Postgres + Milvus 需 3–4 天运维，违背 4 周约束。  
+* **取舍**：**零运维** 本地栈，精力集中在爬虫与 Prompt。
+
+### 3.4 决策总表
+
+| 决策 | 选择 | 理由 |
+|------|------|------|
+| 架构 | Pipeline + LLM 节点（Agent 逻辑视图） | 可控、可交付 |
+| 前后端 | FastAPI + Streamlit | 并发稳定、可演进 |
+| 数据库 | SQLite + ChromaDB | 零运维 |
+| 物理评测 | **不做** | 4 周不可行；社区指标+人工 |
+| 自动化程度 | 半自动 + 强制复核 | 防幻觉决策风险 |
+
+### 3.5 风险与缓解
 
 | 风险 | 缓解 |
 |------|------|
-| LLM 幻觉（虚构 star 数、作者） | Scorer Prompt 约束：仅引用 `metadata` 字段；Writer 禁止补充未提供事实 |
-| 源站反爬 / API 变更 | 每源独立 adapter；失败降级为「该源本周跳过」并告警 |
-| 信息过载 | Top-N 硬限制 + 三档推荐；观望条目折叠到附录 |
-| 编辑负担反弹 | 目标 30 分钟内完成复核；第二个月再考虑个性化订阅 |
+| LLM 幻觉 | 仅引用 `metadata`；人工终稿 |
+| 反爬 | 代理池、拉长间隔、源独立 adapter |
+| 信息过载 | Top-N、三档、附录折叠 |
 
 ---
 
 ## 4. LLM 使用说明
 
-> 详细协作记录见 [llm-usage.md](./llm-usage.md)。
+### 4.1 使用的模型与工具
 
-| 章节 | 是否使用 LLM | 说明 |
-|------|--------------|------|
-| §1 质疑与假设 | 是（起草）+ 人工定稿 | 模糊点列表由 AI 扩写，边界与假设由作者根据 Lab 实情收紧 |
-| §2 方案设计 | 是（结构与草案）+ 人工修订 | 技术选型、源列表、Rubric 权重为作者确认后的版本 |
-| §3 设计决策 | 部分 AI 辅助 | 决策表框架 AI 生成，取舍论述人工润色 |
-| 架构图 | 是（Mermaid 草案）+ 人工校对 | 与正文模块一一对应 |
+| 项目 | 内容 |
+|------|------|
+| IDE / Agent | Cursor Agent（Auto） |
+| 参考协作 | Gemini / GPT-4o 类模型（架构头脑风暴） |
+| 日期 | 2026-05-28 |
 
-**责任声明**：本方案中的架构与排期可供 Lab 评审；若进入实习实现阶段，将以可运行代码与两周真实周报数据作为最终验证，而非文档本身。
+### 4.2 大模型主要生成的部分
 
-**Demo 与实现对齐**：当前仓库 `src/radar/` 提供离线 Demo（规则 Classifier/Scorer，Writer 生成 Markdown），与 §2.3 Agent 职责一致；生产环境将 Scorer/Classifier 换为 LLM + LangGraph，采集层与数据模型不变。运行方式见根目录 [README.md](../README.md)。
+* 架构拓扑、四模块划分骨架、Mermaid 图草案、Markdown 排版。  
+* 本仓库 CLI Demo、PoC 代码、GitHub Pages 站点结构。
+
+### 4.3 人工重大修改与理由
+
+1. **删除「自动 Docker Benchmark 物理评测」**：改为社区指标初筛 + 人工验证，符合 4 周边界。  
+2. **技术栈轻量化**：由「React + Go + Postgres + Milvus」改为 **Python 全栈（FastAPI + Streamlit + SQLite + ChromaDB）**。  
+3. **限定三大信息源**：避免社交爬虫导致 MVP 失控。  
+4. **补充 GitHub / Pages 交付链接** 与科研配色架构图。
+
+> 完整记录见 [llm-usage.md](./llm-usage.md)。
+
+| 章节 | LLM 参与 |
+|------|----------|
+| §1 质疑 | 起草 + 人工定稿 |
+| §2 方案 | 结构 + 人工修订 |
+| §3 决策 | 框架 + 人工润色 |
+| §5–§8 | 合并参考方案补全 |
+
+---
+
+## 5. 4 周 MVP 落地排期
+
+| 阶段 | 时间 | 核心交付物 | 重点与风险 |
+|------|------|------------|------------|
+| **Week 1** | 第 1 周 | 数据基建与爬虫跑通 | FastAPI 初始化、SQLite 表、GitHub+ArXiv 脚本；**风险**：反爬 → 代理池、降频 |
+| **Week 2** | 第 2 周 | 智能大脑与去重 | DeepSeek/GPT API、两阶段 Prompt、ChromaDB 向量去重 |
+| **Week 3** | 第 3 周 | Streamlit 交互看板 | 展示、准许入选/忽略、前后端 API 联调 |
+| **Week 4** | 第 4 周 | 周报导出与交付 | 一键 Markdown、全链路压测、内网部署 V1.0 |
+
+**当前仓库进度**：CLI Demo ✅ · 示例周报 ✅ · 文档站 ✅ · FastAPI/Streamlit PoC 代码 ✅ · 三源生产爬虫待 W1–W2 完善。
+
+---
+
+## 6. 未来演进路线
+
+### 6.1 阶段二：信源拓宽（第 2–3 月）
+
+* X 研究员列表、Discord、YouTube 字幕；图谱关联去重。
+
+### 6.2 阶段三：自动化 Benchmark 沙盒（第 4–6 月）
+
+* K8s/Docker 沙盒；对「已关注」模型自动拉权重跑预设脚本，回填真实 GPU 数据。
+
+### 6.3 阶段四：企业知识中枢（6 月+）
+
+* 历史情报 + 内部文档 RAG；新项目立项时提示历史类似方案与评测结论。
+
+---
+
+## 7. 核心链路代码简例（Proof of Concept）
+
+> 完整文件：[src/examples/fastapi_main.py](../src/examples/fastapi_main.py)、[src/examples/streamlit_app.py](../src/examples/streamlit_app.py)  
+> 离线 Demo：`python src/radar/cli.py demo`
+
+### 7.1 后端 API（FastAPI）
+
+```python
+from fastapi import FastAPI
+import sqlite3
+
+app = FastAPI(title="AI Intelligence Radar API")
+
+@app.get("/api/v1/daily_insights")
+async def get_daily_insights():
+    conn = sqlite3.connect("ai_radar.db")
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT title, url, innovation, eng_value
+        FROM insights WHERE status = '未处理'
+        ORDER BY created_at DESC LIMIT 10
+    """)
+    records = cursor.fetchall()
+    conn.close()
+    return {"code": 200, "data": [
+        {"title": r[0], "url": r[1], "innovation": r[2], "eng_value": r[3]}
+        for r in records
+    ]}
+```
+
+### 7.2 前端看板（Streamlit）
+
+```python
+import streamlit as st
+import requests
+
+st.title("AI 技术情报每日初筛看板")
+
+@st.cache_data(ttl=3600)
+def fetch_data():
+    return requests.get("http://localhost:8000/api/v1/daily_insights").json()["data"]
+
+for item in fetch_data():
+    with st.expander(item["title"]):
+        st.write(f"**核心创新点**：{item['innovation']}")
+        st.write(f"**潜在工程价值**：{item['eng_value']}")
+        if st.button("准许入选周报", key=f"pass_{item['title']}"):
+            st.success("已标记为高价值")
+```
+
+---
+
+## 8. 资源预算与预期收益
+
+### 8.1 预估月度运行成本
+
+| 项 | 估算 |
+|----|------|
+| 算力 | 2C4G 云主机约 **¥100/月**（无 GPU 评测） |
+| LLM API | 日 200 条 × ~1000 tokens，DeepSeek/GPT-4o-mini 约 **¥50/月** |
+
+### 8.2 预期收益
+
+* 为 Lab 每周节省 **≥10 小时** 检索与泛读时间。  
+* 完成「淘金初筛」，规避社区噪音与 LLM 幻觉，聚焦高价值验证与工程创新。
 
 ---
 
@@ -327,7 +461,7 @@ URL 规范化 → 相同 arXiv ID / GitHub repo 合并；标题 + 摘要 **向�
 # AI Lab 技术情报周报 · 2026-W22
 
 ## 本周必读（关注 ×3）
-1. [标题](url) — 推荐关注 — 契合度 4.8/5 — 一句话理由
+1. [标题](url) — 关注 — 综合 4.5/5 — 一句话理由
 
 ## 观望（×5）
 ...
@@ -341,12 +475,20 @@ URL 规范化 → 相同 arXiv ID / GitHub repo 合并；标题 + 摘要 **向�
 - 人工修订：编辑 XXX
 ```
 
-## 附录 B：MVP 技术栈一览
+## 附录 B：技术栈一览
 
-- **语言**：Python 3.11  
-- **编排**：LangGraph + LangChain Core  
-- **调度**：APScheduler  
-- **存储**：SQLite + Chroma（或 sqlite-vec）  
-- **模板**：Jinja2  
-- **看板**：Streamlit  
-- **部署**：单机 Docker Compose 或 Lab 内一台 Linux 定时任务  
+| 类别 | 选型 |
+|------|------|
+| 语言 | Python 3.11 |
+| 后端 | FastAPI + APScheduler |
+| 前端 | Streamlit |
+| 存储 | SQLite + ChromaDB |
+| LLM | DeepSeek-V3 / GPT-4o-mini |
+| Agent 编排 | LangGraph（生产）/ 规则 Demo（当前） |
+| 文档站 | GitHub Pages |
+| 部署 | Docker Compose / 内网 Linux |
+
+---
+
+**责任声明**：架构与排期供 Lab 评审；最终以可运行系统与连续两周真实周报数据验证。  
+**在线预览本报告**：[GitHub 渲染](https://github.com/FBB123571/AI-Tech-Intelligence-Radar/blob/main/docs/report.md) · [文档站](https://fbb123571.github.io/AI-Tech-Intelligence-Radar/)
