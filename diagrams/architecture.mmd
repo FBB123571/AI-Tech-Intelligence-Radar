@@ -1,0 +1,73 @@
+%% AI 技术情报雷达 — 系统架构图 v1.0
+%% 导出: npx -y @mermaid-js/mermaid-cli -i diagrams/architecture.mmd -o diagrams/architecture.png
+
+flowchart TB
+    subgraph sources["① 信息源 P0/P1/P2"]
+        direction LR
+        ARX["arXiv RSS/API"]
+        HF["Hugging Face"]
+        GH["GitHub Trending"]
+        BLOG["官方博客 RSS"]
+        NL["Newsletter"]
+        CN["中文源 可选"]
+    end
+
+    subgraph ingest["② 采集层 · Python + APScheduler"]
+        SCHED["定时调度\n日采 02:00"]
+        ADAPT["源适配器\nAdapter per source"]
+        RAW[("raw_items\n原始 JSON")]
+    end
+
+    subgraph data["③ 数据层"]
+        DEDUP["去重\nURL + 向量相似度"]
+        DB[("SQLite items")]
+        VEC[("Chroma / sqlite-vec\n历史检索")]
+        FOCUS["focus.yaml\nLab 方向配置"]
+    end
+
+    subgraph agents["④ Agent 层 · LangGraph"]
+        direction TB
+        ORCH["Orchestrator"]
+        CLS["Classifier Agent\n类型/标签/实体"]
+        SCR["Scorer Agent\nRubric 五维打分"]
+        WRT["Writer Agent\n周报 Markdown"]
+        ORCH --> CLS --> SCR
+        SCR --> WRT
+    end
+
+    subgraph human["⑤ 人工复核"]
+        ED["轮值编辑\n<30 min/周"]
+    end
+
+    subgraph deliver["⑥ 交付层"]
+        MD["weekly_report.md"]
+        FEISHU["飞书 / 邮件 Webhook"]
+        UI["Streamlit 看板\n检索/归档"]
+    end
+
+    subgraph ops["⑦ 运维"]
+        LOG["日志 & 重试"]
+        COST["LLM 成本统计"]
+        ALERT["源失败告警"]
+    end
+
+    sources --> ADAPT
+    SCHED --> ADAPT
+    ADAPT --> RAW --> DEDUP --> DB
+    DB <--> VEC
+    FOCUS -.-> SCR
+    DB --> ORCH
+    WRT --> MD --> ED
+    ED --> FEISHU
+    ED --> UI
+    ingest --> ops
+    agents --> ops
+
+    classDef source fill:#e3f2fd,stroke:#1565c0
+    classDef agent fill:#fff8e1,stroke:#f57f17
+    classDef human fill:#fce4ec,stroke:#c62828
+    classDef store fill:#e8f5e9,stroke:#2e7d32
+    class sources source
+    class agents agent
+    class human human
+    class data store

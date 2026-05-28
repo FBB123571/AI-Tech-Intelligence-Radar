@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI 技术情报雷达 · 方案与 Demo</title>
+  <link rel="stylesheet" href="assets/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+  <header class="hero">
+    <div class="wrap">
+      <p class="badge">AI 应用 Lab · 管培生测试题交付</p>
+      <h1>AI 技术情报雷达</h1>
+      <p class="lead">为 5–8 人 Lab 提供周度技术情报采集、Agent 评估与决策辅助。含完整方案、项目规划、可运行 Demo 与示例周报。</p>
+      <nav class="cta">
+        <a class="btn primary" href="report.md">方案报告</a>
+        <a class="btn" href="project-plan.md">项目规划书</a>
+        <a class="btn" href="llm-usage.md">LLM 说明</a>
+        <a class="btn" id="github-link" href="#" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section>
+      <h2>系统架构</h2>
+      <pre class="mermaid">
+flowchart TB
+    subgraph sources["信息源"]
+        ARX["arXiv"]
+        HF["Hugging Face"]
+        GH["GitHub"]
+    end
+    subgraph ingest["采集层"]
+        ADAPT["源适配器"]
+        DB[("SQLite")]
+    end
+    subgraph agents["Agent 层"]
+        CLS["Classifier"]
+        SCR["Scorer"]
+        WRT["Writer"]
+        CLS --> SCR --> WRT
+    end
+    subgraph deliver["交付"]
+        MD["周报 Markdown"]
+        WEB["本站点"]
+    end
+    sources --> ADAPT --> DB --> CLS
+    WRT --> MD --> WEB
+      </pre>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <h3>📄 方案设计报告</h3>
+        <p>四章完整内容：质疑与假设、方案设计、设计决策、LLM 使用说明（3–5 页）。</p>
+        <a href="report.md">阅读 report.md →</a>
+      </article>
+      <article class="card">
+        <h3>📋 项目规划书</h3>
+        <p>WBS、甘特图、预算、风险、质量与交付清单。</p>
+        <a href="project-plan.md">阅读 project-plan.md →</a>
+      </article>
+      <article class="card">
+        <h3>⚙️ Demo 流水线</h3>
+        <p>离线可运行：<code>python src/radar/cli.py demo</code></p>
+        <a href="../reports/sample_weekly_report.md">示例周报 →</a>
+      </article>
+      <article class="card">
+        <h3>🤖 LLM 协作说明</h3>
+        <p>透明记录 AI 参与范围与提交前人工核对项。</p>
+        <a href="llm-usage.md">阅读 llm-usage.md →</a>
+      </article>
+    </section>
+
+    <section>
+      <h2>示例周报预览</h2>
+      <div id="report-preview" class="md-preview">加载中…</div>
+    </section>
+  </main>
+
+  <footer class="wrap">
+    <p>© 2026 AI 应用 Lab · 方案设计交付 · v1.0</p>
+  </footer>
+
+  <script>
+    mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+    fetch('reports/sample_weekly_report.md')
+      .then(r => r.ok ? r.text() : Promise.reject())
+      .then(md => { document.getElementById('report-preview').innerHTML = marked.parse(md); })
+      .catch(() => {
+        document.getElementById('report-preview').innerHTML =
+          '<p>请先在本地运行 <code>python src/radar/cli.py demo</code> 生成周报，或查看 GitHub 仓库 <code>reports/</code> 目录。</p>';
+      });
+  </script>
+</body>
+</html>

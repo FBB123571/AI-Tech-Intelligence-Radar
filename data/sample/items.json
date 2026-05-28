@@ -1,0 +1,50 @@
+[
+  {
+    "title": "RAGFlow 2.0: Agentic Retrieval with Graph RAG for Enterprise Knowledge",
+    "url": "https://github.com/example/ragflow",
+    "source": "GitHub Trending",
+    "summary": "Open-source RAG pipeline with agent tool use and vector + knowledge graph hybrid retrieval.",
+    "published": "2026-05-26",
+    "metadata": {"stars": 8200, "has_code": true, "runs_on_single_gpu": true, "license_ok": true}
+  },
+  {
+    "title": "Scaling Reasoning in Small Language Models via Test-Time Compute",
+    "url": "https://arxiv.org/abs/2605.12345",
+    "source": "arXiv cs.CL",
+    "summary": "We study test-time scaling for 3B models on math and code benchmarks. Code available on GitHub.",
+    "published": "2026-05-25",
+    "metadata": {"has_code": true, "runs_on_single_gpu": true, "license_ok": true}
+  },
+  {
+    "title": "Introducing Multimodal MCP Servers for Vision-Language Agents",
+    "url": "https://example.com/blog/mcp-multimodal",
+    "source": "Official Blog",
+    "summary": "New MCP protocol extensions for multimodal tool calling and agent orchestration.",
+    "published": "2026-05-24",
+    "metadata": {"stars": 0, "runs_on_single_gpu": true, "license_ok": true}
+  },
+  {
+    "title": "vLLM 0.8: FP8 Quantization and 2x Throughput on Single GPU",
+    "url": "https://github.com/vllm-project/vllm/releases/tag/v0.8.0",
+    "source": "GitHub Release",
+    "summary": "Major inference release with FP8 kernels and improved PagedAttention for on-device deployment.",
+    "published": "2026-05-23",
+    "metadata": {"stars": 45000, "has_code": true, "runs_on_single_gpu": true, "license_ok": true}
+  },
+  {
+    "title": "Crypto-NFT LLM Marketplace (Sponsored)",
+    "url": "https://example.com/crypto-nft-llm",
+    "source": "Newsletter",
+    "summary": "NFT gated LLM API for crypto trading bots.",
+    "published": "2026-05-22",
+    "metadata": {"stars": 10, "runs_on_single_gpu": false, "license_ok": false}
+  },
+  {
+    "title": "A Survey of Embodied AI Benchmarks 2020-2025",
+    "url": "https://arxiv.org/abs/2605.99999",
+    "source": "arXiv cs.RO",
+    "summary": "Comprehensive survey without new code release; relevant background reading only.",
+    "published": "2026-05-21",
+    "metadata": {"has_code": false, "runs_on_single_gpu": true, "license_ok": true}
+  }
+]

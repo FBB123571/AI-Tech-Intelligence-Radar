@@ -1,0 +1,31 @@
+# Lab 方向配置 — Scorer Agent 使用
+
+lab_name: "AI 应用 Lab"
+
+focus_areas:
+  - name: "RAG / 知识库"
+    keywords: ["retrieval", "RAG", "embedding", "vector", "knowledge graph"]
+    weight_boost: 0.15
+
+  - name: "多模态 / Agent"
+    keywords: ["multimodal", "agent", "tool use", "LangGraph", "MCP"]
+    weight_boost: 0.10
+
+  - name: "端侧 / 推理优化"
+    keywords: ["quantization", "on-device", "inference", "vLLM", "TensorRT"]
+    weight_boost: 0.10
+
+ignore_keywords:
+  - "crypto"
+  - "NFT"
+
+scorer_weights:
+  lab_fit: 0.30
+  reproducibility: 0.25
+  impact: 0.20
+  cost: 0.15
+  risk: 0.10
+
+thresholds:
+  focus_min_score: 4.0
+  watch_min_score: 3.0

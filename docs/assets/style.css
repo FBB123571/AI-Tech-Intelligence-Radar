@@ -1,0 +1,97 @@
+:root {
+  --bg: #0f1419;
+  --card: #1a2332;
+  --text: #e6edf3;
+  --muted: #8b9cb3;
+  --accent: #58a6ff;
+  --accent2: #3fb950;
+  --border: #30363d;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.wrap { max-width: 960px; margin: 0 auto; padding: 0 1.25rem; }
+
+.hero {
+  background: linear-gradient(135deg, #1a3a5c 0%, #0f1419 60%);
+  padding: 3rem 0 2.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  margin: 0 0 0.5rem;
+}
+
+h1 { font-size: 2.25rem; margin: 0 0 0.5rem; }
+.lead { color: var(--muted); max-width: 42rem; margin: 0 0 1.5rem; }
+
+.cta { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+.btn {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  text-decoration: none;
+  color: var(--text);
+  border: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+.btn.primary { background: var(--accent); color: #0d1117; border-color: var(--accent); font-weight: 600; }
+.btn:hover { opacity: 0.9; }
+
+main { padding: 2rem 0 3rem; }
+section { margin-bottom: 2.5rem; }
+h2 { font-size: 1.35rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.25rem;
+}
+.card h3 { margin-top: 0; font-size: 1rem; }
+.card a { color: var(--accent); }
+.card p { color: var(--muted); font-size: 0.9rem; }
+
+.md-preview {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.5rem;
+  font-size: 0.95rem;
+}
+.md-preview h1 { font-size: 1.4rem; }
+.md-preview a { color: var(--accent); }
+
+code {
+  background: #21262d;
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  font-size: 0.85em;
+}
+
+footer {
+  border-top: 1px solid var(--border);
+  padding: 1.5rem 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.mermaid { background: var(--card); border-radius: 8px; padding: 1rem; }

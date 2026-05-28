@@ -1,0 +1,32 @@
+# Lab 方向配置示例 — 复制为 focus.yaml 供 Scorer Agent 使用
+# 提交前请按你们 Lab 真实情况修改
+
+lab_name: "AI 应用 Lab"
+
+focus_areas:
+  - name: "RAG / 知识库"
+    keywords: ["retrieval", "RAG", "embedding", "vector", "knowledge graph"]
+    weight_boost: 0.15
+
+  - name: "多模态 / Agent"
+    keywords: ["multimodal", "agent", "tool use", "LangGraph", "MCP"]
+    weight_boost: 0.10
+
+  - name: "端侧 / 推理优化"
+    keywords: ["quantization", "on-device", "inference", "vLLM", "TensorRT"]
+    weight_boost: 0.10
+
+ignore_keywords:
+  - "crypto"
+  - "NFT"
+
+scorer_weights:
+  lab_fit: 0.30
+  reproducibility: 0.25
+  impact: 0.20
+  cost: 0.15
+  risk: 0.10
+
+thresholds:
+  focus_min_score: 4.0
+  watch_min_score: 3.0
