@@ -8,7 +8,9 @@ venv/
 .vscode/
 diagrams/*.png
 diagrams/*.svg
-data/
+data/*
+!data/sample/
+!data/sample/**
 *.db
 *.sqlite3
 .DS_Store
