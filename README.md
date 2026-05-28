@@ -89,7 +89,7 @@ git init
 git add .
 git commit -m "feat: complete AI tech intelligence radar deliverables"
 git branch -M main
-git remote add origin https://github.com/<YOUR_USER>/AI-Tech-Intelligence-Radar.git
+git remote add origin https://github.com/FBB123571/AI-Tech-Intelligence-Radar.git
 git push -u origin main
 ```
 
