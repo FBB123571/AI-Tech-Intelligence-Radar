@@ -19,8 +19,7 @@
 | **本报告（主交付 Markdown）** | 完整方案（本文） | [docs/report.md](https://github.com/FBB123571/AI-Tech-Intelligence-Radar/blob/main/docs/report.md) |
 | **项目规划书** | WBS、甘特、预算、风险 | [docs/project-plan.md](https://github.com/FBB123571/AI-Tech-Intelligence-Radar/blob/main/docs/project-plan.md) |
 | **LLM 使用说明** | AI 协作透明度 | [docs/llm-usage.md](https://github.com/FBB123571/AI-Tech-Intelligence-Radar/blob/main/docs/llm-usage.md) |
-| **逻辑架构图** | Mermaid 源文件 | [diagrams/architecture.mmd](https://github.com/FBB123571/AI-Tech-Intelligence-Radar/blob/main/diagrams/architecture.mmd) |
-| **实现架构图** | FastAPI + Streamlit 四层 | [diagrams/architecture-impl.mmd](https://github.com/FBB123571/AI-Tech-Intelligence-Radar/blob/main/diagrams/architecture-impl.mmd) |
+| **系统架构图附件（PNG 白底）** | 单独提交用 | [diagrams/architecture.png](https://github.com/FBB123571/AI-Tech-Intelligence-Radar/blob/main/diagrams/architecture.png) |
 | **CLI Demo** | `python src/radar/cli.py demo` | [src/radar/](https://github.com/FBB123571/AI-Tech-Intelligence-Radar/tree/main/src/radar) |
 | **FastAPI / Streamlit PoC** | 报告 §7 对应代码 | [src/examples/](https://github.com/FBB123571/AI-Tech-Intelligence-Radar/tree/main/src/examples) |
 | **示例周报** | Demo 生成 | [reports/sample_weekly_report.md](https://github.com/FBB123571/AI-Tech-Intelligence-Radar/blob/main/reports/sample_weekly_report.md) |
@@ -99,102 +98,13 @@
 | 决策影响 | ≥2 条情报影响「是否试用」判断 |
 | 重复报道率 | **< 10%** |
 
-### 2.2 逻辑架构图（业务流水线 · 科研配色）
+### 2.2 系统架构图（附件 · 白底 PNG）
 
-> 满足题目 **Agent 架构** 要求；生产环境用 LangGraph 编排，Demo 已实现规则版节点。源文件：[architecture.mmd](../diagrams/architecture.mmd)
+> **单独提交附件**：请使用 [`diagrams/architecture.png`](../diagrams/architecture.png)（白底、科研配色）。涵盖数据采集 → FastAPI 服务 → 存储/LLM → Agent 流水线 → Streamlit 人机协同 → 周报/通知/文档站全链路。
 
-```mermaid
-%%{init: {"theme":"base","themeVariables":{"primaryColor":"#E8F1F8","primaryBorderColor":"#1F4E79","secondaryColor":"#E6F4F1","secondaryBorderColor":"#2A7B6E","tertiaryColor":"#F5F0E6","tertiaryBorderColor":"#6B5B3E","lineColor":"#4A6274","clusterBkg":"#F7FAFC","clusterBorder":"#8FA9BC","fontFamily":"Segoe UI, sans-serif"}}}%%
-flowchart LR
-    subgraph L1["① 信息源 · MVP 三大源"]
-        S1["GitHub Trending"]
-        S2["Hugging Face"]
-        S3["ArXiv AI"]
-    end
-    subgraph L2["② 采集层"]
-        SCH["APScheduler 06:00"]
-        ADP["源适配器"]
-        RAW[("raw_items")]
-    end
-    subgraph L3["③ 数据层"]
-        DED["URL MD5 + 向量去重"]
-        DB[("SQLite")]
-        VEC[("ChromaDB")]
-        CFG["focus.yaml"]
-    end
-    subgraph L4["④ 智能层"]
-        F1["阶段1: 相关性过滤"]
-        F2["阶段2: 结构化 JSON"]
-        CLS["Classifier"]
-        SCR["Scorer"]
-        WRT["Writer"]
-    end
-    subgraph L5["⑤ 人机协同"]
-        ED["Streamlit 筛选<br/>准许入选/忽略"]
-    end
-    subgraph L6["⑥ 交付层"]
-        RPT["weekly_report.md"]
-        WEB["Pages / 飞书"]
-    end
-    S1 & S2 & S3 --> ADP
-    SCH --> ADP --> RAW --> DED --> DB
-    DB <--> VEC
-    CFG -.-> SCR
-    DB --> F1 --> F2
-    F2 --> CLS --> SCR --> WRT --> RPT --> ED --> WEB
+![AI 技术情报雷达系统架构图](../diagrams/architecture.png)
 
-    classDef layerSource fill:#E8F1F8,stroke:#1F4E79,color:#1A2B3C
-    classDef layerData fill:#E6F4F1,stroke:#2A7B6E,color:#1A2B3C
-    classDef layerAgent fill:#F5F0E6,stroke:#6B5B3E,color:#1A2B3C
-    classDef layerHuman fill:#F3E8EE,stroke:#7B4B6A,color:#1A2B3C
-    class S1,S2,S3 layerSource
-    class DED,CFG layerData
-    class RAW,DB,VEC layerData
-    class F1,F2,CLS,SCR,WRT layerAgent
-    class ED layerHuman
-```
-
-### 2.3 实现架构图（FastAPI + Streamlit 四层解耦）
-
-> 1–2 人 4 周交付的 **工程落地视图**。源文件：[architecture-impl.mmd](../diagrams/architecture-impl.mmd)
-
-```mermaid
-%%{init: {"theme":"base","themeVariables":{"primaryColor":"#E8F1F8","primaryBorderColor":"#1F4E79","secondaryColor":"#E6F4F1","secondaryBorderColor":"#2A7B6E","tertiaryColor":"#F5F0E6","tertiaryBorderColor":"#6B5B3E","lineColor":"#4A6274","fontFamily":"Segoe UI, sans-serif"}}}%%
-flowchart TB
-    subgraph UI["展现与协作层"]
-        ST["Streamlit Dashboard"]
-        ST1["每日情报流看板"]
-        ST2["人工打分/筛选"]
-        ST3["周报一键导出 Markdown"]
-    end
-    subgraph API["服务与控制层"]
-        FA["FastAPI Server"]
-        FA1["REST 路由"]
-        FA2["Pipeline 控制"]
-        FA3["APScheduler 异步任务"]
-    end
-    subgraph AI["智能与存储层"]
-        LLM["LLM<br/>DeepSeek-V3 / GPT-4o-mini"]
-        CHR[("ChromaDB")]
-        SQL[("SQLite")]
-    end
-    subgraph CRAWL["数据采集层"]
-        C1["GitHub Trending"]
-        C2["Hugging Face Daily"]
-        C3["ArXiv AI RSS"]
-    end
-    C1 & C2 & C3 --> SQL
-    C1 & C2 & C3 --> CHR
-    SQL <--> FA
-    LLM <--> FA
-    CHR <--> FA
-    FA <--> ST
-
-    classDef ui fill:#E8F1F8,stroke:#1F4E79,color:#1A2B3C
-    classDef api fill:#E6F4F1,stroke:#2A7B6E,color:#1A2B3C
-    classDef ai fill:#F5F0E6,stroke:#6B5B3E,color:#1A2B3C
-    classDef crawl fill:#EEF2F6,stroke:#4A6274,color:#1A2B3C
-```
+**图层说明**：
 
 | 层 | 职责 | MVP 技术选型 |
 |----|------|----------------|

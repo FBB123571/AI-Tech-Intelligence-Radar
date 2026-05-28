@@ -1,117 +1,91 @@
-%% AI 技术情报雷达 — 系统架构图 v2.0（科研配色）
-%% 导出 PNG: npx -y @mermaid-js/mermaid-cli -i diagrams/architecture.mmd -o diagrams/architecture.png
+%% AI 技术情报雷达 — 系统架构图（单图 · 白底导出）
+%% npx -y @mermaid-js/mermaid-cli -i diagrams/architecture.mmd -o diagrams/architecture.png -b white
 
 %%{init: {
   "theme": "base",
   "themeVariables": {
-    "fontFamily": "Segoe UI, Helvetica Neue, Arial, sans-serif",
-    "fontSize": "14px",
+    "fontFamily": "Microsoft YaHei, Segoe UI, Arial, sans-serif",
+    "fontSize": "13px",
     "primaryColor": "#E8F1F8",
     "primaryTextColor": "#1A2B3C",
     "primaryBorderColor": "#1F4E79",
     "secondaryColor": "#E6F4F1",
-    "secondaryTextColor": "#1A2B3C",
     "secondaryBorderColor": "#2A7B6E",
     "tertiaryColor": "#F5F0E6",
-    "tertiaryTextColor": "#1A2B3C",
     "tertiaryBorderColor": "#6B5B3E",
     "lineColor": "#4A6274",
-    "textColor": "#1A2B3C",
-    "mainBkg": "#FFFFFF",
-    "nodeBorder": "#1F4E79",
-    "clusterBkg": "#F7FAFC",
+    "clusterBkg": "#FFFFFF",
     "clusterBorder": "#8FA9BC",
     "titleColor": "#1F4E79",
-    "edgeLabelBackground": "#FFFFFF"
+    "background": "#FFFFFF"
   },
-  "flowchart": {
-    "curve": "basis",
-    "padding": 16,
-    "nodeSpacing": 28,
-    "rankSpacing": 40,
-    "htmlLabels": true
-  }
+  "flowchart": { "curve": "basis", "padding": 20, "nodeSpacing": 24, "rankSpacing": 36, "htmlLabels": true }
 }}%%
 
-flowchart LR
-    subgraph L1["① 信息源层 · P0 / P1 / P2"]
-        direction TB
-        S1["arXiv · cs.CL/LG/CV"]
-        S2["Hugging Face"]
-        S3["GitHub Trending"]
-        S4["官方博客 RSS"]
-        S5["Newsletter / 中文源"]
+flowchart TB
+    subgraph SRC["① 数据采集层"]
+        direction LR
+        C1["GitHub Trending"]
+        C2["Hugging Face Daily"]
+        C3["ArXiv AI RSS"]
     end
 
-    subgraph L2["② 采集层"]
-        direction TB
-        SCH["APScheduler<br/>日采 02:00"]
-        ADP["源适配器 Adapter"]
-        RAW[("raw_items")]
+    subgraph SVC["② 服务与控制层 · FastAPI"]
+        direction LR
+        SCH["APScheduler<br/>定时调度"]
+        API["REST API / Pipeline"]
     end
 
-    subgraph L3["③ 数据层"]
-        direction TB
-        DED["去重<br/>URL + 向量"]
-        DB[("SQLite items")]
-        VEC[("向量索引")]
-        CFG["focus.yaml"]
+    subgraph DATA["③ 智能与存储层"]
+        direction LR
+        SQL[("SQLite<br/>元数据")]
+        CHR[("ChromaDB<br/>语义去重")]
+        LLM["LLM 两阶段<br/>过滤 + 结构化"]
     end
 
-    subgraph L4["④ Agent 层 · LangGraph"]
-        direction TB
-        ORC["Orchestrator"]
-        CLS["Classifier<br/>类型 / 标签"]
-        SCR["Scorer<br/>Rubric 五维"]
-        WRT["Writer<br/>周报段落"]
-        ORC --> CLS --> SCR --> WRT
+    subgraph AGT["④ Agent 流水线"]
+        direction LR
+        CLS["Classifier<br/>分类/标签"]
+        SCR["Scorer<br/>Rubric 打分"]
+        WRT["Writer<br/>周报生成"]
+        CLS --> SCR --> WRT
     end
 
-    subgraph L5["⑤ 人机协同"]
-        direction TB
-        ED["轮值编辑复核<br/>≤ 30 min / 周"]
+    subgraph HITL["⑤ 人机协同"]
+        ED["Streamlit 看板<br/>筛选 · 复核 ≤30min"]
     end
 
-    subgraph L6["⑥ 交付层"]
-        direction TB
+    subgraph OUT["⑥ 交付输出"]
+        direction LR
         RPT["weekly_report.md"]
         PUSH["飞书 / 邮件"]
-        WEB["Streamlit / Pages"]
+        WEB["GitHub Pages"]
     end
 
-    subgraph L7["⑦ 运维"]
-        direction TB
-        OPS1["日志 · 重试"]
-        OPS2["成本统计"]
-        OPS3["源失败告警"]
-    end
+    C1 & C2 & C3 --> SCH
+    SCH --> API
+    API --> SQL
+    API --> CHR
+    API --> LLM
+    SQL --> CLS
+    LLM --> CLS
+    CHR -.-> SCR
+    WRT --> RPT
+    ED --> RPT
+    ED --> PUSH
+    RPT --> WEB
+    AGT --> ED
 
-  S1 & S2 & S3 & S4 & S5 --> ADP
-  SCH --> ADP
-  ADP --> RAW --> DED --> DB
-  DB <--> VEC
-  CFG -.-> SCR
-  DB --> ORC
-  WRT --> RPT --> ED
-  ED --> PUSH
-  ED --> WEB
-  L2 -.-> L7
-  L4 -.-> L7
+    classDef c1 fill:#EEF2F6,stroke:#4A6274,stroke-width:1.5px,color:#1A2B3C
+    classDef c2 fill:#E6F4F1,stroke:#2A7B6E,stroke-width:1.5px,color:#1A2B3C
+    classDef c3 fill:#F5F0E6,stroke:#6B5B3E,stroke-width:1.5px,color:#1A2B3C
+    classDef c4 fill:#F3E8EE,stroke:#7B4B6A,stroke-width:1.5px,color:#1A2B3C
+    classDef c5 fill:#E8F1F8,stroke:#1F4E79,stroke-width:1.5px,color:#1A2B3C
+    classDef db fill:#FFFFFF,stroke:#2A7B6E,stroke-width:2px,color:#1A2B3C
 
-  classDef layerSource fill:#E8F1F8,stroke:#1F4E79,stroke-width:1.5px,color:#1A2B3C
-  classDef layerIngest fill:#EEF2F6,stroke:#4A6274,stroke-width:1.5px,color:#1A2B3C
-  classDef layerData fill:#E6F4F1,stroke:#2A7B6E,stroke-width:1.5px,color:#1A2B3C
-  classDef layerAgent fill:#F5F0E6,stroke:#6B5B3E,stroke-width:1.5px,color:#1A2B3C
-  classDef layerHuman fill:#F3E8EE,stroke:#7B4B6A,stroke-width:1.5px,color:#1A2B3C
-  classDef layerDeliver fill:#E8F1F8,stroke:#1F4E79,stroke-width:1.5px,color:#1A2B3C
-  classDef layerOps fill:#F0F2F5,stroke:#8FA9BC,stroke-width:1px,color:#4A6274
-  classDef store fill:#FFFFFF,stroke:#2A7B6E,stroke-width:2px,color:#1A2B3C
-
-  class S1,S2,S3,S4,S5 layerSource
-  class SCH,ADP layerIngest
-  class DED,CFG layerData
-  class RAW,DB,VEC store
-  class ORC,CLS,SCR,WRT layerAgent
-  class ED layerHuman
-  class RPT,PUSH,WEB layerDeliver
-  class OPS1,OPS2,OPS3 layerOps
+    class C1,C2,C3 c1
+    class SCH,API c2
+    class SQL,CHR db
+    class LLM,CLS,SCR,WRT c3
+    class ED c4
+    class RPT,PUSH,WEB c5
